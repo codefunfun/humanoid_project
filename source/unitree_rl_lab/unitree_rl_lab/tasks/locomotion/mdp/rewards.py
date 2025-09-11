@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 Joint penalties.
 """
 
-
+# 관절 energy 근사 reward
 def energy(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     """Penalize the energy used by the robot's joints."""
     asset: Articulation = env.scene[asset_cfg.name]
@@ -24,7 +24,7 @@ def energy(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("r
     qfrc = asset.data.applied_torque[:, asset_cfg.joint_ids]
     return torch.sum(torch.abs(qvel) * torch.abs(qfrc), dim=-1)
 
-
+# 관절이 움직이지 않도록 유도하는 reward
 def stand_still(
     env: ManagerBasedRLEnv, command_name: str = "base_velocity", asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
@@ -39,7 +39,7 @@ def stand_still(
 Robot.
 """
 
-
+# 
 def orientation_l2(
     env: ManagerBasedRLEnv, desired_gravity: list[float], asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
@@ -52,7 +52,7 @@ def orientation_l2(
     normalized = 0.5 * cos_dist + 0.5  # map from [-1, 1] to [0, 1]
     return torch.square(normalized)
 
-
+# 자세가 기울어질 수록 값이 커짐
 def upward(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
     """Penalize z-axis base linear velocity using L2 squared kernel."""
     # extract the used quantities (to enable type-hinting)
@@ -117,7 +117,7 @@ def feet_height_body(
     reward *= torch.clamp(-env.scene["robot"].data.projected_gravity_b[:, 2], 0, 0.7) / 0.7
     return reward
 
-
+# 발이 목표 높이보다 낮을 수록 커짐
 def foot_clearance_reward(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, target_height: float, std: float, tanh_mult: float
 ) -> torch.Tensor:
@@ -128,7 +128,7 @@ def foot_clearance_reward(
     reward = foot_z_target_error * foot_velocity_tanh
     return torch.exp(-torch.sum(reward, dim=1) / std)
 
-
+# 발 사이가 가까워 질 수록 커짐 
 def feet_too_near(
     env: ManagerBasedRLEnv, threshold: float = 0.2, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
@@ -137,7 +137,7 @@ def feet_too_near(
     distance = torch.norm(feet_pos[:, 0] - feet_pos[:, 1], dim=-1)
     return (threshold - distance).clamp(min=0)
 
-
+# 0.1 이하의 명령 (거의 정지)을 받았을 때 발이 접촉하고 있으면 보상
 def feet_contact_without_cmd(
     env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, command_name: str = "base_velocity"
 ) -> torch.Tensor:
@@ -152,7 +152,7 @@ def feet_contact_without_cmd(
     reward = torch.sum(is_contact, dim=-1).float()
     return reward * (command_norm < 0.1)
 
-
+# 공중 시간 분산 + 접촉 시간 분산 - 발 동작이 불규칙할수록 커짐 
 def air_time_variance_penalty(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
     """Penalize variance in the amount of time each foot spends in the air/on the ground relative to each other"""
     # extract the used quantities (to enable type-hinting)
@@ -171,7 +171,7 @@ def air_time_variance_penalty(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg
 Feet Gait rewards.
 """
 
-
+# 보행 주기 위상이 일정하면 보상 
 def feet_gait(
     env: ManagerBasedRLEnv,
     period: float,
@@ -205,7 +205,7 @@ def feet_gait(
 Other rewards.
 """
 
-
+# 양 관절의 각도 차이가 클 수록 값이 커짐 
 def joint_mirror(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, mirror_joints: list[list[str]]) -> torch.Tensor:
     # extract the used quantities (to enable type-hinting)
     asset: Articulation = env.scene[asset_cfg.name]
