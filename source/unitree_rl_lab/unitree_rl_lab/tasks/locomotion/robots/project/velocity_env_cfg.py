@@ -490,10 +490,14 @@ class RewardsCfg:
     # -- base
     
     # linear velocity penalty
-    base_linear_velocity = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
+    base_linear_velocity = RewTerm(
+        func=mdp.lin_vel_z_l2, weight=-2.0
+        )
     
     # angular velocity penalty
-    base_angular_velocity = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
+    base_angular_velocity = RewTerm(
+        func=mdp.ang_vel_xy_l2, weight=-0.05
+        )
     #joint_vel = RewTerm(func=mdp.joint_vel_l2, weight=-0.001)
     
     
@@ -502,7 +506,7 @@ class RewardsCfg:
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-10.0)
 
     # joint velocity limits
-    dof_vel_limits = RewTerm(func=mdp.joint_vel_limits, weight=-0.1)
+    dof_vel_limits = RewTerm(func=mdp.joint_vel_limits, weight=-0.1, params={"soft_ratio": 0.8},)
 
     # joint torque limits 
     dof_torque_limits = RewTerm(func=mdp.applied_torque_limits, weight=-2e-3)
@@ -538,9 +542,10 @@ class RewardsCfg:
             )
         },
     )
+    
     joint_deviation_legs = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.5.0,
+        weight=-0.5,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*_hip_roll_joint", ".*_hip_yaw_joint"])},
     )
 
