@@ -39,7 +39,7 @@ def stand_still(
 Robot.
 """
 
-# 
+# 로봇의 기울기가 원하는 방향에 allign 될 수록 커짐 
 def orientation_l2(
     env: ManagerBasedRLEnv, desired_gravity: list[float], asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
@@ -60,7 +60,7 @@ def upward(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("r
     reward = torch.square(1 - asset.data.projected_gravity_b[:, 2])
     return reward
 
-
+# joint가 많이 움직일 수록 커짐 
 def joint_position_penalty(
     env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, stand_still_scale: float, velocity_threshold: float
 ) -> torch.Tensor:
@@ -224,3 +224,17 @@ def joint_mirror(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, mirror_joint
         )
     reward *= 1 / len(mirror_joints) if len(mirror_joints) > 0 else 0
     return reward
+
+
+# 지면 접촉을 하고 있지 않으면 패널티 
+def fly_panalty(
+    env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, ) -> torch.Tensor:
+    """
+    Reward for feet contact when the command is zero.
+    """
+    # asset: Articulation = env.scene[asset_cfg.name]
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    is_contact = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids] > 0
+    no_contact = (~is_contact).all(dim=1)
+    reward = no_contact.float()
+    return reward 
