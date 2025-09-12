@@ -47,16 +47,16 @@ COBBLESTONE_ROAD_CFG = terrain_gen.TerrainGeneratorCfg(
     difficulty_range=(0.0, 1.0),
     use_cache=False,
     sub_terrains={
-        #"flat":        terrain_gen.MeshPlaneTerrainCfg(proportion=0.4),
-#        "Rough":        terrain_gen.HfRandomUniformTerrainCfg(proportion=0.2, 
-#                                                             noise_range=(-0.08,0.08),
-#                                                             noise_step=0.01
+        "flat":        terrain_gen.MeshPlaneTerrainCfg(proportion=0.1),
+        "Rough":        terrain_gen.HfRandomUniformTerrainCfg(proportion=0.1, 
+                                                             noise_range=(0,0.03),
+                                                             noise_step=0.01
                                                              #downsampled_scale=
-#                                                             ),
-        "wave":        terrain_gen.HfWaveTerrainCfg(proportion=0.1, amplitude_range=(-0.1, 0.1)),
+                                                             ),
+        #"wave":        terrain_gen.HfWaveTerrainCfg(proportion=0.1, amplitude_range=(-0.1, 0.1)),
 
-        "stone":        terrain_gen.HfSteppingStonesTerrainCfg(proportion=0.1, stone_height_max=0.5,
-                                                               stone_width_range=(0.4, 0.8), stone_distance_range=(0.1, 0.5)),
+        #"stone":        terrain_gen.HfSteppingStonesTerrainCfg(proportion=0.1, stone_height_max=0.5,
+        #                                                       stone_width_range=(0.4, 0.8), stone_distance_range=(0, 0.2)),
         "slopes_up":      terrain_gen.HfPyramidSlopedTerrainCfg(proportion=0.2, 
                                                              slope_range=(0 , 0.436), # in radians = 25deg
                                                              platform_width=1,
@@ -632,6 +632,7 @@ class RobotEnvCfg(ManagerBasedRLEnvCfg):
 
     # Scene settings
     scene: RobotSceneCfg = RobotSceneCfg(num_envs=4096, env_spacing=2.5)
+    #scene: RobotSceneCfg = RobotSceneCfg(num_envs=1024, env_spacing=2.5)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -652,6 +653,7 @@ class RobotEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
+
 
         # update sensor update periods
         # we tick all the sensors based on the smallest update period (physics update period)
